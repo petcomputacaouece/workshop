@@ -1,75 +1,71 @@
 import java.util.ArrayList;
 import java.util.List;
+import Exceptions.*;
 
 public class AccountManager {
-    private List<String> users = new ArrayList<>();
+    private List<User> users = new ArrayList<>();
 
-    // Funcao para adicionar usuario
-    public void addUser(String name, int age, String email) {
-        //Se for menor que 18
+    public void addUser(String name, int age, String email) throws userNotOldEnoughErr  {
+        //Se idade <age> for menor que 18
         if (age < 18) {
-            System.out.println("User is not old enough to register.");
-            return;
+            throw new userNotOldEnoughErr();
         }
-        users.add(name + ":" + age + ":" + email);
+        users.add(new User(name,age,email));
         System.out.println("User added successfully!");
     }
 
-    public String gU(String name) {
-        for (String user : users) {
-            if (user.split(":")[0].equals(name)) {
+    public User getUser(String name) throws userDontExists {
+        for (User user : users) {
+            if (user.getName().equals(name)) {
                 return user;
             }
         }
-        System.out.println("User not found.");
-        return null;
+        throw new userDontExists();
     }
 
-    public void dU(String name) {
+    public void removeUser(String name) throws userDontExists {
         for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).split(":")[0].equals(name)) {
+            if (users.get(i).getName().equals(name)) {
                 users.remove(i);
                 System.out.println("User deleted.");
                 return;
             }
         }
-        System.out.println("User not found.");
+        throw new userDontExists();
     }
 
-    public void pU() {
-        for (String user : users) {
-            String[] details = user.split(":");
-            System.out.println("Name: " + details[0] + ", Age: " + details[1] + ", Email: " + details[2]);
+    public void printUsersInfo() {
+        for (User user : users) {
+            System.out.println(user.toString());
         }
     }
 
     // Funcao para checar email e senha
-    public boolean cE(String email) {
-        return email.contains("@");
+    public boolean isEmailValid(User user) {
+        return user.getEmail().contains("@");
     }
 
-    public void uE(String name, String newEmail) {
+    public void updateEmail(String name, String newEmail) throws userDontExists {
         for (int i = 0; i < users.size(); i++) {
-            String[] details = users.get(i).split(":");
-            if (details[0].equals(name)) {
-                users.set(i, details[0] + ":" + details[1] + ":" + newEmail);
+            if (users.get(i).getName().equals(name)) {
+                users.get(i).setEmail(newEmail);
                 System.out.println("Email updated.");
                 return;
             }
         }
-        System.out.println("User not found.");
+        throw new userDontExists();
     }
 
-    public void validate(String name, int age, String email) {
-        //Adiciona usuario
-        addUser(name, age, email);
+    public void validate(String name, int age, String email) throws userNotOldEnoughErr, userDontExists {
 
-        // Verifica se o email é válido
-        if (!cE(email)) {
+        //Usuário a ser Validado
+        User unverifyUser = new User(name,age,email);
+
+        if (!isEmailValid(unverifyUser)) {
             System.out.println("Invalid email. Removing user.");
-            // Remove o usuário se o email for inválido
-            dU(name); 
+            removeUser(name);
         }
     }
 
 }
+

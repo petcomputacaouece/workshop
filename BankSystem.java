@@ -1,125 +1,107 @@
 import java.util.ArrayList;
 import java.util.List;
-
+import Exceptions.*;
 
 public class BankSystem {
    
-    private List<Account> accs = new ArrayList<>(); // armazena contas
+    private List<Account> accounts = new ArrayList<>(); // armazena contas
 
 
-    public void addAccount(String owner, int accNum, double balance) {
+    public void addAccount(String owner, int accountNum, double balance) throws createNegativegBalanceAccountErr{
         if (balance < 0) {
-            System.out.println("Cannot add account with negative balance");
-            return;
+            throw new createNegativegBalanceAccountErr();
         }
-        accs.add(new Account(owner, accNum, balance));
+        accounts.add(new Account(owner, accountNum, balance));
         System.out.println("Account added for " + owner);
     }
 
+    public Account getAccount(int accountNum) throws accountDontExistsErr{
+        for (Account account : accounts) {
+            if (account.getAccountNum() == accountNum) {
+                return account;
+            }
+        }
+        throw new accountDontExistsErr();
+    }
 
-    public void removeAccount(int num) {
-        for (int i = 0; i < accs.size(); i++) {
-            if (accs.get(i).accNum == num) {
-                accs.remove(i);
+
+    public void removeAccount(int num) throws accountDontExistsErr{
+        for (int i = 0; i < accounts.size(); i++) {
+            if (accounts.get(i).getAccountNum() == num) {
+                accounts.remove(i);
                 System.out.println("Account removed.");
                 return;
             }
         }
-        System.out.println("Account not found.");
+        throw new accountDontExistsErr();
     }
 
 
-    public void displayAccountInfo(int num) {
-        for (Account acc : accs) {
-            if (acc.accNum == num) {
-                System.out.println("Owner: " + acc.owner + ", Balance: $" + acc.balance);
+
+    public void displayAccountInfo(int num) throws accountDontExistsErr{
+        for (Account account : accounts) {
+            if (account.getAccountNum() == num) {
+                System.out.println(account.toString());
                 return;
             }
         }
-        System.out.println("Account not found.");
+        throw new accountDontExistsErr();
     }
 
 
-    public void deposit(int accNum, double amt) {
+    public void deposit(int accountNum, double amt) throws accountDontExistsErr, negativeDepositeErr{
         if (amt <= 0) {
-            System.out.println("Deposit amount must be positive.");
-            return;
+            throw new negativeDepositeErr();
         }
-        for (Account acc : accs) {
-            if (acc.accNum == accNum) {
-                acc.balance += amt;
-                System.out.println("Deposited $" + amt + " to account " + accNum);
+        for (Account account : accounts) {
+            if (account.getAccountNum() == accountNum) {
+                account.setBalance(account.getBalance()-amt);
+                System.out.println("Deposited $" + amt + " to account " + accountNum);
                 return;
             }
         }
-        System.out.println("Account not found.");
+        throw new accountDontExistsErr();
     }
 
 
-    public void withdraw(int accNum, double amt) {
-        for (Account acc : accs) {
-            if (acc.accNum == accNum) {
-                if (amt > acc.balance) {
-                    System.out.println("Insufficient funds.");
-                    return;
+    public void withdraw(int accountNum, double amt) throws InsufficientFundsErr,accountDontExistsErr{
+        for (Account account : accounts) {
+            if (account.getAccountNum() == accountNum) {
+                if (amt > account.getBalance()) {
+                    throw new InsufficientFundsErr();
                 }
-                acc.balance -= amt;
-                System.out.println("Withdrew $" + amt + " from account " + accNum);
+                account.setBalance(account.getBalance()-amt);
+                System.out.println("Withdrew $" + amt + " from account " + accountNum);
                 return;
             }
         }
-        System.out.println("Account not found.");
+        throw new accountDontExistsErr();
     }
 
 
-    public void transferFunds(int fromAccNum, int toAccNum, double amt) {
+    public void transferFunds(int fromAccountNum, int toAccountNum, double amt) throws negativeDepositeErr, accountDontExistsErr, InsufficientFundsErr {
         if (amt <= 0) {
-            System.out.println("Transfer amount must be positive.");
-            return;
+            throw new negativeDepositeErr();
         }
 
 
-        Account fromAcc = null;
-        Account toAcc = null;
+        Account fromAccount = getAccount(fromAccountNum);
+        Account toAccount = getAccount(toAccountNum);
 
-
-        for (Account acc : accs) {
-            if (acc.accNum == fromAccNum) {
-                fromAcc = acc;
-            } else if (acc.accNum == toAccNum) {
-                toAcc = acc;
-            }
+        if (fromAccount.getBalance() < amt) {
+            throw new InsufficientFundsErr();
         }
 
 
-        if (fromAcc == null || toAcc == null) {
-            System.out.println("One or both accounts not found.");
-            return;
-        }
-
-
-        if (fromAcc.balance < amt) {
-            System.out.println("Insufficient funds for transfer.");
-            return;
-        }
-
-
-        fromAcc.balance -= amt;
-        toAcc.balance += amt;
-        System.out.println("Transferred $" + amt + " from account " + fromAccNum + " to account " + toAccNum);
-    }
-
-
-    public void showAllAccounts() {
-        for (Account acc : accs) {
-            System.out.println("Owner: " + acc.owner + ", Account Number: " + acc.accNum + ", Balance: $" + acc.balance);
-        }
+        fromAccount.setBalance(fromAccount.getBalance()-amt);
+        toAccount.setBalance(toAccount.getBalance()+amt);
+        System.out.println("Transferred $" + amt + " from account " + fromAccountNum + " to account " + toAccountNum);
     }
 
 
     public void showAccounts() {
-        for (Account acc : accs) {
-            System.out.println("Owner: " + acc.owner + ", Account Number: " + acc.accNum + ", Balance: $" + acc.balance);
+        for (Account account : accounts) {
+            System.out.println(account.toString());
         }
     }
 
@@ -144,30 +126,65 @@ public class BankSystem {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws createNegativegBalanceAccountErr, accountDontExistsErr, negativeDepositeErr, InsufficientFundsErr {
         BankSystem bs = new BankSystem();
+        try {
         bs.addAccount("Alice", 1001, 500);
-        bs.addAccount("Bob", 1002, -100); // Erro permitido no sistema
+        bs.addAccount("Bob", 1002, -100);
         bs.deposit(1001, 200);
         bs.withdraw(1001, 100);
         bs.transferFunds(1001, 1002, 300);
-        bs.showAllAccounts();
-        bs.showAccounts(); // Chamada do método duplicado
+        bs.showAccounts();
+    }catch (Exception e){
+            System.out.println(e.toString());
+        }
     }
+
 }
 
 
 class Account {
-    String owner;
-    int accNum;
-    double balance;
 
 
-    public Account(String owner, int accNum, double balance) {
+    private String owner;
+    private int accountNum;
+    private double balance;
+
+
+    public Account(String owner, int accountNum, double balance) {
         this.owner = owner;
-        this.accNum = accNum;
+        this.accountNum = accountNum;
         this.balance = balance;
     }
+
+    public String  toString(){
+        return  "Owner: " + owner + ", Account Number: " + accountNum + ", Balance: $" + balance;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public int getAccountNum() {
+        return accountNum;
+    }
+
+    public void setAccountNum(int accountNum) {
+        this.accountNum = accountNum;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
 }
 
 
