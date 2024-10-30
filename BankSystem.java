@@ -1,33 +1,45 @@
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class BankSystem {
-   
+
     private List<Account> accs = new ArrayList<>(); // armazena contas
 
-
     public void addAccount(String owner, int accNum, double balance) {
-        if (balance < 0) {
+        if (!validBalance(balance)) {
             System.out.println("Cannot add account with negative balance");
             return;
         }
+
+        if (!duplicateAcc(accNum)) {
+            System.out.println("Duplicate account. Die.");
+            return;
+        }
+
+        if (!validAccNum(accNum)) {
+            System.out.println("Invalid account number. Perish.");
+            return;
+        }
+
         accs.add(new Account(owner, accNum, balance));
         System.out.println("Account added for " + owner);
     }
 
-
     public void removeAccount(int num) {
+        boolean accFound = false;
         for (int i = 0; i < accs.size(); i++) {
             if (accs.get(i).accNum == num) {
                 accs.remove(i);
+                accFound = true;
                 System.out.println("Account removed.");
-                return;
             }
         }
-        System.out.println("Account not found.");
-    }
 
+        if (!accFound) {
+            System.out.println("Account not found.");
+        }
+
+    }
 
     public void displayAccountInfo(int num) {
         for (Account acc : accs) {
@@ -38,7 +50,6 @@ public class BankSystem {
         }
         System.out.println("Account not found.");
     }
-
 
     public void deposit(int accNum, double amt) {
         if (amt <= 0) {
@@ -55,7 +66,6 @@ public class BankSystem {
         System.out.println("Account not found.");
     }
 
-
     public void withdraw(int accNum, double amt) {
         for (Account acc : accs) {
             if (acc.accNum == accNum) {
@@ -71,17 +81,14 @@ public class BankSystem {
         System.out.println("Account not found.");
     }
 
-
     public void transferFunds(int fromAccNum, int toAccNum, double amt) {
         if (amt <= 0) {
             System.out.println("Transfer amount must be positive.");
             return;
         }
 
-
         Account fromAcc = null;
         Account toAcc = null;
-
 
         for (Account acc : accs) {
             if (acc.accNum == fromAccNum) {
@@ -91,58 +98,57 @@ public class BankSystem {
             }
         }
 
-
         if (fromAcc == null || toAcc == null) {
             System.out.println("One or both accounts not found.");
             return;
         }
-
 
         if (fromAcc.balance < amt) {
             System.out.println("Insufficient funds for transfer.");
             return;
         }
 
-
         fromAcc.balance -= amt;
         toAcc.balance += amt;
         System.out.println("Transferred $" + amt + " from account " + fromAccNum + " to account " + toAccNum);
     }
 
-
     public void showAllAccounts() {
         for (Account acc : accs) {
-            System.out.println("Owner: " + acc.owner + ", Account Number: " + acc.accNum + ", Balance: $" + acc.balance);
+            System.out
+                    .println("Owner: " + acc.owner + ", Account Number: " + acc.accNum + ", Balance: $" + acc.balance);
         }
     }
-
-
-    public void showAccounts() {
-        for (Account acc : accs) {
-            System.out.println("Owner: " + acc.owner + ", Account Number: " + acc.accNum + ", Balance: $" + acc.balance);
-        }
-    }
-
 
     public boolean validBalance(double balance) {
-       return balance >= 0;
+        return balance >= 0;
     }
-
 
     public boolean validAccountNumber(int accNum) {
         return accNum > 0;
     }
 
-
     public boolean validAmount(double amt) {
         return amt > 0;
     }
 
+    public boolean duplicateAcc(int num) {
+        for (Account acc : accs) {
+            if (acc.accNum == num) {
+                return true;
+            }
+        }
 
-    public boolean isBalanceValid(double balance) { // Função duplicada
-        return balance >= 0;
+        return false;
     }
 
+    public boolean validAccNum(int num) {
+        if (num >= 0) {
+            return true;
+        }
+
+        return false;
+    }
 
     public static void main(String[] args) {
         BankSystem bs = new BankSystem();
@@ -152,16 +158,13 @@ public class BankSystem {
         bs.withdraw(1001, 100);
         bs.transferFunds(1001, 1002, 300);
         bs.showAllAccounts();
-        bs.showAccounts(); // Chamada do método duplicado
     }
 }
-
 
 class Account {
     String owner;
     int accNum;
     double balance;
-
 
     public Account(String owner, int accNum, double balance) {
         this.owner = owner;
@@ -169,6 +172,3 @@ class Account {
         this.balance = balance;
     }
 }
-
-
-

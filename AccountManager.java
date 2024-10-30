@@ -6,7 +6,7 @@ public class AccountManager {
 
     // Funcao para adicionar usuario
     public void addUser(String name, int age, String email) {
-        //Se for menor que 18
+        // Se for menor que 18
         if (age < 18) {
             System.out.println("User is not old enough to register.");
             return;
@@ -15,7 +15,7 @@ public class AccountManager {
         System.out.println("User added successfully!");
     }
 
-    public String gU(String name) {
+    public String getUser(String name) {
         for (String user : users) {
             if (user.split(":")[0].equals(name)) {
                 return user;
@@ -25,18 +25,24 @@ public class AccountManager {
         return null;
     }
 
-    public void dU(String name) {
+    public void deleteUser(String name) {
+        boolean foundUser = false;
         for (int i = 0; i < users.size(); i++) {
             if (users.get(i).split(":")[0].equals(name)) {
                 users.remove(i);
                 System.out.println("User deleted.");
-                return;
+                foundUser = true;
+                break;
             }
         }
-        System.out.println("User not found.");
+
+        if (!foundUser) {
+            System.out.println("User not found.");
+        }
+
     }
 
-    public void pU() {
+    public void printUser() {
         for (String user : users) {
             String[] details = user.split(":");
             System.out.println("Name: " + details[0] + ", Age: " + details[1] + ", Email: " + details[2]);
@@ -44,11 +50,17 @@ public class AccountManager {
     }
 
     // Funcao para checar email e senha
-    public boolean cE(String email) {
+    public boolean checkEmail(String email) {
         return email.contains("@");
     }
 
-    public void uE(String name, String newEmail) {
+    public void updateEmail(String name, String newEmail) {
+
+        if (!checkEmail(newEmail)) {
+            System.out.println("Invalid email.");
+            return;
+        }
+
         for (int i = 0; i < users.size(); i++) {
             String[] details = users.get(i).split(":");
             if (details[0].equals(name)) {
@@ -61,14 +73,22 @@ public class AccountManager {
     }
 
     public void validate(String name, int age, String email) {
-        //Adiciona usuario
+        // Adiciona usuario
         addUser(name, age, email);
 
         // Verifica se o email é válido
-        if (!cE(email)) {
+        if (!checkEmail(email)) {
             System.out.println("Invalid email. Removing user.");
             // Remove o usuário se o email for inválido
-            dU(name); 
+            deleteUser(name);
+        } else {
+            String user = getUser(name);
+
+            if (user != null) {
+                System.out.println("User validated");
+            } else {
+                System.out.println("User not found");
+            }
         }
     }
 
